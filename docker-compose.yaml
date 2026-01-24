@@ -1,0 +1,19 @@
+version: "3.9"
+
+# TODO: insert ports from env file
+services:
+  postgres:
+    image: postgres:16
+    container_name: toomuCh_postgres
+    restart: always
+    env_file: 
+    - .env
+    ports:
+    - ${POSTGRES_PORT}:5432
+  app:
+    container_name: toomuCh_app
+    build: .
+    ports:
+      - 8080:8080
+    env_file: 
+    - .env
