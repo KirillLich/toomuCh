@@ -1,0 +1,13 @@
+env: local
+db:
+  user: ${POSTGRES_USER}
+  password: ${POSTGRES_PASSWORD}
+  name: ${POSTGRES_NAME}
+  host: ${POSTGRES_HOST}
+  port: ${POSTGRES_PORT}
+  sslmode: ${POSTGRES_SSLMODE}
+server:
+  host: "localhost"
+  port: 8080
+app:
+  messageMaxLen: 100
