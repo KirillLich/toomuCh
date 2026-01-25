@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY cmd/ cmd/
 COPY internal/ internal/
-COPY pkg/ pkg/
+# COPY pkg/ pkg/
 
 # -ldflags="-s -w"
 RUN go build -o /app/main  ./cmd
