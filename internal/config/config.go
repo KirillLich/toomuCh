@@ -15,19 +15,21 @@ type Config struct {
 		Host string
 		Port int
 	}
-	DB struct {
-		User     string
-		Password string
-		Name     string
-		Host     string
-		Port     int
-		SSLMode  string
-	}
+	DB  DBConfig
 	App struct {
 		MessageMaxLen int
 		TTL           time.Duration
 		LogLVL        string
 	}
+}
+
+type DBConfig struct {
+	User     string
+	Password string
+	Name     string
+	Host     string
+	Port     int
+	SSLMode  string
 }
 
 func SetConfig() *Config {

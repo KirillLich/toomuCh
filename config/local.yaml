@@ -1,8 +1,8 @@
-env: local
+env: dev
 db:
   user: ${POSTGRES_USER}
   password: ${POSTGRES_PASSWORD}
-  name: ${POSTGRES_NAME}
+  name: ${POSTGRES_DB}
   host: ${POSTGRES_HOST}
   port: ${POSTGRES_PORT}
   sslmode: ${POSTGRES_SSLMODE}

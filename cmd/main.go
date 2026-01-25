@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/KirillLich/toomuCh/internal/config"
+	"github.com/KirillLich/toomuCh/internal/db"
 	"github.com/KirillLich/toomuCh/internal/logger"
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
@@ -32,6 +33,11 @@ func main() {
 		zap.Int("app.messageMaxLen", cfg.App.MessageMaxLen),
 	)
 
+	_, err := db.InitPostgres(cfg.DB, logger)
+	if err != nil {
+		logger.Fatal("error initialisation db", zap.Error(err))
+	}
+
 	r := chi.NewRouter()
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -43,7 +49,5 @@ func main() {
 			)})
 	})
 
-	fmt.Println(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
-	fmt.Println(cfg)
 	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Server.Port), r)
 }
