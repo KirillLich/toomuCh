@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -24,6 +25,8 @@ type Config struct {
 	}
 	App struct {
 		MessageMaxLen int
+		TTL           time.Duration
+		LogLVL        string
 	}
 }
 
