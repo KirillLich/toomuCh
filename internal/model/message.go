@@ -3,8 +3,8 @@ package model
 import "time"
 
 type Message struct {
-	ID        int
+	ID        int `gorm:"primaryKey"`
 	Text      string
 	Title     string
-	CreatedAt time.Time
+	CreatedAt time.Time `gorm:"index"`
 }

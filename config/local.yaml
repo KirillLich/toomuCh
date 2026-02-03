@@ -12,5 +12,6 @@ server:
 app:
   messageMaxLen: 100
   ttl: 5m
+  sleepTime : 30s
   # supported log levels: debug info warn error
   loglvl: info

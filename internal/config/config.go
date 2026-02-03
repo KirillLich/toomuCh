@@ -19,6 +19,7 @@ type Config struct {
 	App struct {
 		MessageMaxLen int
 		TTL           time.Duration
+		SleepTime     time.Duration
 		LogLVL        string
 	}
 }
