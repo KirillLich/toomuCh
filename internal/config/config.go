@@ -16,12 +16,14 @@ type Config struct {
 		Port int
 	}
 	DB  DBConfig
-	App struct {
-		MessageMaxLen int
-		TTL           time.Duration
-		SleepTime     time.Duration
-		LogLVL        string
-	}
+	App AppConfig
+}
+
+type AppConfig struct {
+	MessageMaxLen int
+	TTL           time.Duration
+	SleepTime     time.Duration
+	LogLVL        string
 }
 
 type DBConfig struct {
