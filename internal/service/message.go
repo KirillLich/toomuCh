@@ -12,15 +12,14 @@ import (
 	"go.uber.org/zap"
 )
 
-// type MessageRepository interface {
-// 	CreateMessage(ctx context.Context, m *model.Message) (int, error)
-// 	GetLatest(ctx context.Context, limit int) ([]model.Message, error)
-// 	GetBefore(ctx context.Context, prevTime time.Time, prevId, limit int) ([]model.Message, error)
-// 	DeleteBefore(ctx context.Context, delTime time.Time) (int, error)
-// }
+type MessageCursor struct {
+	PrevTime time.Time
+	PrevId   int
+}
 
 type MessageService interface {
-	CreateMessage(ctx context.Context, m *model.Message) (int, error)
+	CreateMessage(ctx context.Context, title string, text string) (*model.Message, error)
+	GetMessage(ctx context.Context, limit int, cursor *MessageCursor) ([]model.Message, error)
 	GetLatest(ctx context.Context, limit int) ([]model.Message, error)
 	GetBefore(ctx context.Context, prevTime time.Time, prevId, limit int) ([]model.Message, error)
 }
@@ -36,16 +35,39 @@ func NewMessageService(logger *zap.Logger, repo repository.MessageRepository, cl
 	return &messageService{logger: logger, repo: repo, cleaner: cleaner, app: app}
 }
 
-func (s *messageService) CreateMessage(ctx context.Context, m *model.Message) (int, error) {
+func (s *messageService) CreateMessage(
+	ctx context.Context,
+	title string,
+	text string,
+) (*model.Message, error) {
 	const op = "MessageService.CreateMessage"
-	if len(m.Title) > s.app.MessageMaxLen {
-		return 0, fmt.Errorf("%s: %w", op, tmerrors.ErrTooLongTitle)
+	if len(title) > s.app.MessageMaxLen {
+		return nil, fmt.Errorf("%s: %w", op, tmerrors.ErrTooLongTitle)
 	}
-	if len(m.Text) > s.app.MessageMaxLen {
-		return 0, fmt.Errorf("%s: %w", op, tmerrors.ErrTooLongText)
+	if len(text) > s.app.MessageMaxLen {
+		return nil, fmt.Errorf("%s: %w", op, tmerrors.ErrTooLongText)
 	}
 
-	return s.repo.CreateMessage(ctx, m)
+	m := &model.Message{
+		Title:     title,
+		Text:      text,
+		CreatedAt: time.Now().UTC(),
+	}
+
+	id, err := s.repo.CreateMessage(ctx, m)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	m.ID = id
+	return m, nil
+}
+
+func (s *messageService) GetMessage(ctx context.Context, limit int, cursor *MessageCursor) ([]model.Message, error) {
+	if cursor == nil {
+		return s.GetLatest(ctx, limit)
+	}
+
+	return s.GetBefore(ctx, cursor.PrevTime, cursor.PrevId, limit)
 }
 
 func (s *messageService) GetLatest(ctx context.Context, limit int) ([]model.Message, error) {

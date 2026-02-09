@@ -10,7 +10,7 @@ import (
 )
 
 type Cleaner interface {
-	Run(ctx context.Context)
+	run()
 }
 
 type cleaner struct {

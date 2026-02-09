@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/KirillLich/toomuCh/internal/config"
 	"github.com/KirillLich/toomuCh/internal/db"
+	"github.com/KirillLich/toomuCh/internal/handler"
 	"github.com/KirillLich/toomuCh/internal/logger"
+	"github.com/KirillLich/toomuCh/internal/repository"
+	"github.com/KirillLich/toomuCh/internal/service"
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
 )
@@ -33,13 +37,18 @@ func main() {
 		zap.Int("app.messageMaxLen", cfg.App.MessageMaxLen),
 	)
 
-	_, err := db.InitPostgres(cfg.DB, logger)
+	conn, err := db.InitPostgres(cfg.DB, logger)
 	if err != nil {
 		logger.Fatal("error initialisation db", zap.Error(err))
 	}
 
+	repo := repository.NewMessageRepo(logger, conn)
+	cl := service.NewCleaner(repo, cfg.App.TTL, cfg.App.SleepTime, logger, context.Background())
+	serv := service.NewMessageService(logger, repo, cl, cfg.App)
+	handler := handler.NewMessageHandler(serv, logger)
+
 	r := chi.NewRouter()
-	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(
 			HealthResponse{Status: fmt.Sprintf(
@@ -48,6 +57,7 @@ func main() {
 				cfg.Server.Port,
 			)})
 	})
-
+	r.Post("/message", handler.CreateMessage)
+	r.Get("/message", handler.GetLatest)
 	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Server.Port), r)
 }

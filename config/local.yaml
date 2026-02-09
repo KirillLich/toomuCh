@@ -11,7 +11,7 @@ server:
   port: 8080
 app:
   messageMaxLen: 100
-  ttl: 5m
+  ttl: 50m
   sleepTime : 30s
   # supported log levels: debug info warn error
   loglvl: info
