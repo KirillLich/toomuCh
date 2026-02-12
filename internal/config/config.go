@@ -17,6 +17,7 @@ type Config struct {
 	}
 	DB  DBConfig
 	App AppConfig
+	WS  WSConfig
 }
 
 type AppConfig struct {
@@ -33,6 +34,13 @@ type DBConfig struct {
 	Host     string
 	Port     int
 	SSLMode  string
+}
+
+type WSConfig struct {
+	ReadDeadline  time.Duration
+	WriteDeadline time.Duration
+	PingPeriod    time.Duration
+	BuffSize      int64
 }
 
 func SetConfig() *Config {

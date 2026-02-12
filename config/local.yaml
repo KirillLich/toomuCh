@@ -12,6 +12,11 @@ server:
 app:
   messageMaxLen: 100
   ttl: 50m
-  sleepTime : 30s
+  sleepTime: 30s
   # supported log levels: debug info warn error
   loglvl: info
+ws:
+  readDeadline: 60s
+  writeDeadline: 60s
+  pingPeriod: 50s
+  buffSize: 256
