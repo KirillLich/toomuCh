@@ -1,5 +1,7 @@
 package ws
 
+import "context"
+
 type Hub struct {
 	clients    map[*Client]bool
 	broadcast  chan []byte
@@ -7,7 +9,16 @@ type Hub struct {
 	unregister chan *Client
 }
 
-func (h *Hub) Run() {
+func NewHub() *Hub {
+	return &Hub{
+		broadcast:  make(chan []byte),
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
+		clients:    make(map[*Client]bool),
+	}
+}
+
+func (h *Hub) Run(ctx context.Context) {
 	for {
 		select {
 		case client := <-h.register:
@@ -18,7 +29,7 @@ func (h *Hub) Run() {
 				close(client.send)
 			}
 		case message := <-h.broadcast:
-			for client, _ := range h.clients {
+			for client := range h.clients {
 				select {
 				case client.send <- message:
 				default:
@@ -26,6 +37,12 @@ func (h *Hub) Run() {
 					delete(h.clients, client)
 				}
 			}
+		case <-ctx.Done():
+			for client := range h.clients {
+				close(client.send)
+				delete(h.clients, client)
+			}
+			return
 		}
 	}
 }

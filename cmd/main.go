@@ -12,6 +12,7 @@ import (
 	"github.com/KirillLich/toomuCh/internal/logger"
 	"github.com/KirillLich/toomuCh/internal/repository"
 	"github.com/KirillLich/toomuCh/internal/service"
+	"github.com/KirillLich/toomuCh/internal/ws"
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
 )
@@ -47,6 +48,10 @@ func main() {
 	serv := service.NewMessageService(logger, repo, cl, cfg.App)
 	handler := handler.NewMessageHandler(serv, logger)
 
+	hub := ws.NewHub()
+	go hub.Run(context.Background())
+	wsh := ws.NewHandler(hub, logger, cfg.WS)
+
 	r := chi.NewRouter()
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -59,5 +64,9 @@ func main() {
 	})
 	r.Post("/message", handler.CreateMessage)
 	r.Get("/message", handler.GetLatest)
-	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Server.Port), r)
+	r.Get("/ws/message", wsh.ServeWS)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.Server.Port), r)
+	if err != nil {
+		logger.Fatal("server just stopped", zap.Error(err))
+	}
 }

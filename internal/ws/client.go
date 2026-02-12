@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const deadline = 60 * time.Second
+const defaultTicker = 50 * time.Second
 
 type Client struct {
 	logger *zap.Logger
@@ -59,7 +59,13 @@ func (c *Client) readPump() {
 
 func (c *Client) writePump() {
 	const op = "ws.Client.WritePump"
-	ticker := time.NewTicker(c.cfg.PingPeriod)
+
+	var ticker *time.Ticker
+	if c.cfg.PingPeriod != 0 {
+		ticker = time.NewTicker(c.cfg.PingPeriod)
+	} else {
+		ticker = time.NewTicker(defaultTicker)
+	}
 	defer func() {
 		c.hub.unregister <- c
 		ticker.Stop()
